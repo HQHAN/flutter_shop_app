@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shop/models/product.dart';
+import 'package:shop/providers/product.dart';
 
 class ProductProvider with ChangeNotifier {
   List<Product> _products = [
-     Product(
+    Product(
       id: 'p1',
       title: 'Red Shirt',
       description: 'A red shirt - it is pretty red!',
@@ -41,12 +41,32 @@ class ProductProvider with ChangeNotifier {
     return [..._products];
   }
 
+  List<Product> get favItems {
+    return _products.where((item) => item.isFavorite).toList();
+  }
+
   Product findById(String id) {
     return _products.firstWhere((item) => item.id == id);
   }
 
-  void addProduct(Product item) {
-    _products.add(item);
+  void upsertProduct(Product update) {
+
+    final foundIndex = _products.indexWhere((item) => item.id == update.id);
+
+    if (foundIndex >= 0) {
+      _products[foundIndex] = update;
+    } else {
+      update = update.copyWith(
+        id: DateTime.now().toString(),
+      );
+      _products.add(update);
+    }
+    
+    notifyListeners();
+  }
+
+  void deleteProduct(String id) {
+    _products.removeWhere((item) => item.id == id);
     notifyListeners();
   }
 }
