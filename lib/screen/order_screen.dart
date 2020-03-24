@@ -15,14 +15,10 @@ class OrderScreen extends StatelessWidget {
       ),
       drawer: AppDrawer(),
       body: FutureBuilder(
-        future: Provider.of<Orders>(context, listen: false).fetchAndSetOrder(),
-        builder: (ctx, snapShot) {
-          if (snapShot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else {
-            if (snapShot.error != null) {
-              return Center(child: Text(snapShot.error.toString()));
-            } else {
+          future:
+              Provider.of<Orders>(context, listen: false).fetchAndSetOrder(),
+          builder: (ctx, snapShot) {
+            if (snapShot.hasData) {
               return Consumer<Orders>(
                 builder: (BuildContext context, value, Widget child) {
                   return ListView.builder(
@@ -33,10 +29,12 @@ class OrderScreen extends StatelessWidget {
                   );
                 },
               );
+            } else if (snapShot.hasError) {
+              return Center(child: Text(snapShot.error.toString()));
             }
-          }
-        },
-      ),
+
+            return Center(child: CircularProgressIndicator());
+          }),
     );
   }
 }

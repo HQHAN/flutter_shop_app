@@ -14,12 +14,12 @@ class Orders with ChangeNotifier {
     return [..._orders];
   }
 
-  Future<void> fetchAndSetOrder() async {
+  Future<List<OrderItem>> fetchAndSetOrder() async {
     try {
       final response = await http.get(url);
       print(json.decode(response.body));
       final fetched = json.decode(response.body) as Map<String, dynamic>;
-      if(fetched == null) return;
+      if(fetched == null) return null;
 
       _orders.clear();
       fetched.forEach((id, orderData) {
@@ -40,6 +40,7 @@ class Orders with ChangeNotifier {
       });
       _orders = _orders.reversed.toList();
       notifyListeners();
+      return _orders;
     } catch (error) {
       print(error);
       throw error;
