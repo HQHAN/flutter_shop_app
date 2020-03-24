@@ -11,6 +11,7 @@ class UserProductItem extends StatelessWidget {
   UserProductItem(this.id, this.imgUrl, this.title);
   @override
   Widget build(BuildContext context) {
+    final sfd = Scaffold.of(context);
     return Column(
       children: <Widget>[
         ListTile(
@@ -31,9 +32,15 @@ class UserProductItem extends StatelessWidget {
                 ),
                 IconButton(
                   icon: Icon(Icons.delete),
-                  onPressed: () {
-                    Provider.of<ProductProvider>(context, listen: false)
-                        .deleteProduct(id);
+                  onPressed: () async {
+                    try {
+                      await Provider.of<ProductProvider>(context, listen: false)
+                          .deleteProduct(id);
+                    } catch (error) {
+                      sfd.showSnackBar(SnackBar(
+                        content: Text('Deleting Failed!', textAlign: TextAlign.center,),
+                      ));
+                    }
                   },
                 ),
               ],

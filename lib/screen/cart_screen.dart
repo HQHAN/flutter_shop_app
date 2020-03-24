@@ -4,8 +4,15 @@ import 'package:shop/providers/cart.dart';
 import 'package:shop/providers/orders_provider.dart';
 import 'package:shop/widgets/cart_item.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static const routeName = '/cart';
+
+  @override
+  _CartScreenState createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<Cart>(context);
@@ -34,17 +41,7 @@ class CartScreen extends StatelessWidget {
                       ),
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
-                    FlatButton(
-                      onPressed: () {
-                        Provider.of<Orders>(context, listen: false).addOrder(
-                          cartProvider.cartItems.values.toList(),
-                          cartProvider.totalPrice,
-                        );
-                        cartProvider.clear();
-                      },
-                      child: Text('Order now'),
-                      textColor: Theme.of(context).primaryColor,
-                    )
+                    OrderButton(cartProvider),
                   ],
                 ),
               ),
@@ -70,5 +67,47 @@ class CartScreen extends StatelessWidget {
             ),
           ],
         ));
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  final Cart cart;
+  OrderButton(this.cart);
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isOrderInProgress = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return _isOrderInProgress
+        ? CircularProgressIndicator()
+        : FlatButton(
+            onPressed: widget.cart.cartItems.length == 0
+                ? null
+                : () async {
+                    setState(() {
+                      _isOrderInProgress = true;
+                    });
+                    try {
+                      await Provider.of<Orders>(context, listen: false)
+                          .addOrder(
+                        widget.cart.cartItems.values.toList(),
+                        widget.cart.totalPrice,
+                      );
+                      widget.cart.clear();
+                    } catch (error) {
+                      print(error.toString());
+                    } finally {
+                      setState(() {
+                        _isOrderInProgress = false;
+                      });
+                    }
+                  },
+            child: Text('Order now'),
+            textColor: Theme.of(context).primaryColor,
+          );
   }
 }
