@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shop/models/http_exception.dart';
+
 class Auth with ChangeNotifier {
   static const SIGN_UP_SEGMENT = 'signUp';
   static const SIGN_IN_SEGMENT = 'signInWithPassword';
@@ -21,8 +23,12 @@ class Auth with ChangeNotifier {
           }));
       final jsonRes = json.decode(response.body);
       print(jsonRes);
+      if(jsonRes['error']['code'] != 200) {
+        throw HttpException(jsonRes['error']['message']);
+      }
     } catch (error) {
       print(error);
+      throw error;
     }
   }
   Future<void> login(String email, String password) async {

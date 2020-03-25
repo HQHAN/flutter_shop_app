@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop/models/http_exception.dart';
 import 'package:shop/providers/auth.dart';
 
 enum AuthMode { SIGN_UP, LOGIN }
@@ -94,6 +95,20 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
+  void _showAlertDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        content: Text(message),
+        actions: <Widget>[
+          FlatButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Got it!')),
+        ],
+      ),
+    );
+  }
+
   void _submit() async {
     if (!_formkey.currentState.validate()) {
       return;
@@ -102,15 +117,39 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
-    if (_authMode == AuthMode.LOGIN) {
-      // Login user in
-      await Provider.of<Auth>(context)
-          .login(_credentials['email'], _credentials['password']);
-    } else {
-      // Sign user up
-      await Provider.of<Auth>(context)
-          .signUp(_credentials['email'], _credentials['password']);
+    try {
+      if (_authMode == AuthMode.LOGIN) {
+        // Login user in
+        await Provider.of<Auth>(context)
+            .login(_credentials['email'], _credentials['password']);
+      } else {
+        // Sign user up
+        await Provider.of<Auth>(context)
+            .signUp(_credentials['email'], _credentials['password']);
+      }
+    } on HttpException catch (error) {
+      var errorMessage = 'Authentication failed!';
+      if (error.toString().contains('EMAIL_EXIST')) {
+        errorMessage =
+            "The email address is already in use by another account.!";
+      } else if (error.toString().contains('INVALID_EMAIL')) {
+        errorMessage = "This is not a valid email address!";
+      } else if (error.toString().contains('OPERATION_NOT_ALLOWED')) {
+        errorMessage = "Password sign-in is disabled for this project!";
+      } else if (error.toString().contains('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+        errorMessage =
+            "We have blocked all requests from this device due to unusual activity. Try again later.";
+      } else if (error.toString().contains('WEAK_PASSWORD')) {
+        errorMessage =
+            "Passwas is too weak! please try agian with the stronger one";
+      } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
+        errorMessage = "Could not find a user with that email!";
+      }
+      _showAlertDialog(errorMessage);
+    } catch (error) {
+      _showAlertDialog('Could not authenticate you. Please try again later.');
     }
+
     setState(() {
       _isLoading = false;
     });
