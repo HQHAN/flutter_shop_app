@@ -8,12 +8,12 @@ class UserProductScreen extends StatelessWidget {
   static const String routeName = '/user-product-list';
 
   Future<void> _refreshProducts(BuildContext ctx) async {
-    await Provider.of<ProductProvider>(ctx).fetchAndSetProducts();
+    await Provider.of<ProductProvider>(ctx, listen: false)
+        .fetchAndSetProducts(filterByUser: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final products = Provider.of<ProductProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Your products'),
@@ -25,17 +25,28 @@ class UserProductScreen extends StatelessWidget {
               }),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => _refreshProducts(context),
-        child: ListView.builder(
-            itemCount: products.items.length,
-            itemBuilder: (_, i) {
-              return UserProductItem(
-                products.items[i].id,
-                products.items[i].imageUrl,
-                products.items[i].title,
-              );
-            }),
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (ctx, snapshot) =>
+            snapshot.connectionState == ConnectionState.waiting
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => _refreshProducts(context),
+                    child: Consumer<ProductProvider>(
+                      builder: (ctx, products, _) => ListView.builder(
+                        itemCount: products.items.length,
+                        itemBuilder: (_, i) {
+                          return UserProductItem(
+                            products.items[i].id,
+                            products.items[i].imageUrl,
+                            products.items[i].title,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
       ),
     );
   }

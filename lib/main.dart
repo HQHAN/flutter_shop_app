@@ -10,6 +10,7 @@ import 'package:shop/screen/edit_product_screen.dart';
 import 'package:shop/screen/order_screen.dart';
 import 'package:shop/screen/product_detail_screen.dart';
 import 'package:shop/screen/product_overview_screen.dart';
+import 'package:shop/screen/splash_screen.dart';
 import 'package:shop/screen/user_product_screen.dart';
 
 void main() => runApp(MyApp());
@@ -23,14 +24,22 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(
           value: Auth(),
         ),
-        ChangeNotifierProvider.value(
-          value: ProductProvider(),
+        ChangeNotifierProxyProvider<Auth, ProductProvider>(
+          create: (ctx) => ProductProvider(),
+          update: (ctx, auth, previousProvider) {
+            return (previousProvider..authToken = auth.token)
+              ..userId = auth.userId;
+          },
         ),
         ChangeNotifierProvider.value(
           value: Cart(),
         ),
-        ChangeNotifierProvider.value(
-          value: Orders(),
+        ChangeNotifierProxyProvider<Auth, Orders>(
+          create: (ctx) => Orders(),
+          update: (ctx, auth, previousProvider) {
+            return (previousProvider..authToken = auth.token)
+              ..userId = auth.userId;
+          },
         ),
       ],
       child: MaterialApp(
@@ -41,7 +50,18 @@ class MyApp extends StatelessWidget {
           accentColor: Colors.deepOrange,
         ),
         home: Consumer<Auth>(builder: (ctx, auth, _) {
-          return auth.isAuth ? ProductOverviewScreen() : AuthScreen();
+          return auth.isAuth
+              ? ProductOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (ctx, authSnapshot) {
+                    if (authSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return SplashScreen();
+                    }
+                    return AuthScreen();
+                  },
+                );
         }),
         routes: {
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
