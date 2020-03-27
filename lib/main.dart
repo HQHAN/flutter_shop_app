@@ -12,6 +12,7 @@ import 'package:shop/screen/product_detail_screen.dart';
 import 'package:shop/screen/product_overview_screen.dart';
 import 'package:shop/screen/splash_screen.dart';
 import 'package:shop/screen/user_product_screen.dart';
+import 'helper/page_transition_animation.dart';
 
 void main() => runApp(MyApp());
 
@@ -45,10 +46,13 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          fontFamily: 'Lato',
-          primarySwatch: Colors.purple,
-          accentColor: Colors.deepOrange,
-        ),
+            fontFamily: 'Lato',
+            primarySwatch: Colors.purple,
+            accentColor: Colors.deepOrange,
+            pageTransitionsTheme: PageTransitionsTheme(builders: {
+              TargetPlatform.android: CustomPageTransitionBuilder(),
+              TargetPlatform.iOS: CustomPageTransitionBuilder(),
+            })),
         home: Consumer<Auth>(builder: (ctx, auth, _) {
           return auth.isAuth
               ? ProductOverviewScreen()

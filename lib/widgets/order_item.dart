@@ -20,49 +20,60 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
   @override
   Widget build(BuildContext context) {
     List<CartItem> cartItems = widget.item.cartItems;
-    return Card(
-      margin: EdgeInsets.all(10),
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            title: Text('\$${widget.item.amount}'),
-            subtitle: Text(
-              DateFormat('dd MM yyyy hh:mm').format(widget.item.dateTime),
-            ),
-            trailing: IconButton(
-              icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
-              onPressed: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-            ),
-          ),
-          if (_isExpanded)
-            Container(
-              padding: EdgeInsets.all(10),
-              height: min(
-                cartItems.length * 30.0 + 10,
-                180,
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      height: _isExpanded ? min(cartItems.length * 20.0 + 120, 200) : 95,
+      child: Card(
+        margin: EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: Text('\$${widget.item.amount}'),
+              subtitle: Text(
+                DateFormat('dd MM yyyy hh:mm').format(widget.item.dateTime),
               ),
-              child: ListView.builder(itemCount: cartItems.length,
-              itemBuilder: (_, i) {
-                final item = cartItems[i];
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                  Text(item.title, style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),),
-                  Text('${item.quantity} x ${item.price}', style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),),
-                ],);
-              },)
+              trailing: IconButton(
+                icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+                onPressed: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+              ),
+            ),
+            AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              height: _isExpanded ? min(cartItems.length * 20.0 + 20, 100) : 0,
+              child: Container(
+                  padding: EdgeInsets.all(10),
+                  child: ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (_, i) {
+                      final item = cartItems[i];
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            item.title,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${item.quantity} x ${item.price}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  )),
             )
-        ],
+          ],
+        ),
       ),
     );
   }

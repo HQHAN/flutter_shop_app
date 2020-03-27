@@ -20,9 +20,14 @@ class ProductItem extends StatelessWidget {
           arguments: item.id,
         ),
         child: GridTile(
-            child: Image.network(
-              item.imageUrl,
-              fit: BoxFit.cover,
+            child: Hero(
+              tag: item.id,
+              child: FadeInImage(
+                placeholder:
+                    AssetImage('assets/images/product_placeholder.png'),
+                image: NetworkImage(item.imageUrl),
+                fit: BoxFit.cover,
+              ),
             ),
             footer: GridTileBar(
               backgroundColor: Colors.black87,
@@ -53,9 +58,11 @@ class ProductItem extends StatelessWidget {
                     SnackBar(
                       content: Text('snack bar'),
                       duration: Duration(seconds: 2),
-                      action: SnackBarAction(label: 'UNDO', onPressed: () {
-                        cart.removeSingleItem(item.id);
-                      }),
+                      action: SnackBarAction(
+                          label: 'UNDO',
+                          onPressed: () {
+                            cart.removeSingleItem(item.id);
+                          }),
                     ),
                   );
                 },
